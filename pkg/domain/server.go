@@ -56,3 +56,10 @@ func (s *Server) SetLiveness(value bool) bool {
 
 	return old
 }
+
+func (s *Server) IsAlive() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.alive
+}
