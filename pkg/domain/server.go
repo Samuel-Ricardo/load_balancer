@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"sync"
@@ -30,4 +31,8 @@ type Server struct {
 	Metadata map[string]string
 	mu       sync.RWMutex
 	alive    bool
+}
+
+func (s *Server) Forward(res http.ResponseWriter, req *http.Request) {
+	s.Proxy.ServeHTTP(res, req)
 }
