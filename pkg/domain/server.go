@@ -46,3 +46,13 @@ func (s *Server) GetMetaOrDefault(key, def string) string {
 
 	return v
 }
+
+func (s *Server) SetLiveness(value bool) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	old := s.alive
+	s.alive = value
+
+	return old
+}
