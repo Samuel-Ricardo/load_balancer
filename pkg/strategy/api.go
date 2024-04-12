@@ -6,8 +6,7 @@ import (
 	"sync"
 
 	"github.com/Samuel-Ricardo/load_balancer/pkg/domain"
-	"github.com/pingcap/log"
-	"golang.org/x/crypto/openpgp/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -62,7 +61,7 @@ func (r *RoundRobin) Next(servers []*domain.Server) (*domain.Server, error) {
 
 	if picked == nil || seen == len(servers) {
 		log.Error("All servers are dead")
-		return nil, errors.New(fmt.Sprintf("Checked all the '%d' servers, none of them are alive", seen))
+		return nil, fmt.Errorf("checked all the '%d' servers, none of them are alive", seen)
 	}
 
 	log.Infof("Strategy picked server: %s", picked.Url.Host)
@@ -76,7 +75,47 @@ type WeightedRoundRobin struct {
 	mu      sync.Mutex
 }
 
-// Next implements BalancingStrategy.
-func (w *WeightedRoundRobin) Next([]*domain.Server) (*domain.Server, error) {
-	panic("unimplemented")
+// NOTE: implements Weighted Round Robin algorithm for BalancingStrategy interface
+func (w *WeightedRoundRobin) Next(servers []*domain.Server) (*domain.Server, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	if w.count == nil {
+		w.count = make([]int, len(servers))
+		w.current = 0
+	}
+
+	seen := 0
+	var picked *domain.Server
+
+	for seen < len(servers) {
+
+		picked = servers[w.current]
+		capacity := picked.GetMetaOrDefaultInt("weight", 1)
+
+		if !picked.IsAlive() {
+			seen++
+			w.count[w.current] = 0
+			w.current = (w.current + 1) % len(servers)
+			continue
+		}
+
+		if w.count[w.current] <= capacity {
+
+			w.count[w.current]++
+			log.Infof("Strategy picked server: %s", picked.Url.Host)
+
+			return picked, nil
+		}
+
+		w.count[w.current] = 0
+		w.current = (w.current + 1) % len(servers)
+	}
+
+	if picked == nil || seen == len(servers) {
+		log.Error("All servers are dead")
+		return nil, errors.New(fmt.Sprintf("Checked all the '%d' servers, none of them is available", seen))
+	}
+
+	return picked, nil
 }

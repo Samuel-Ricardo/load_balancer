@@ -1,9 +1,11 @@
 package domain
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strconv"
 	"sync"
 )
 
@@ -45,6 +47,15 @@ func (s *Server) GetMetaOrDefault(key, def string) string {
 	}
 
 	return v
+}
+
+func (s *Server) GetMetaOrDefaultInt(key string, def int) int {
+	v := s.GetMetaOrDefault(key, fmt.Sprintf("%d", def))
+	a, err := strconv.Atoi(v)
+	if err != nil {
+		return def
+	}
+	return a
 }
 
 func (s *Server) SetLiveness(value bool) bool {
