@@ -22,6 +22,7 @@ type BalancingStrategy interface {
 var strategies map[string]func() BalancingStrategy
 
 func init() {
+	strategies = make(map[string]func() BalancingStrategy, 0)
 	strategies[kRoundRobin] = func() BalancingStrategy {
 		return &RoundRobin{
 			mu:      sync.Mutex{},

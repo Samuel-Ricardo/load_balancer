@@ -6,7 +6,7 @@ import (
 	"github.com/Samuel-Ricardo/load_balancer/pkg/strategy"
 )
 
-type config struct {
+type Config struct {
 	Services []domain.Service `yaml:"services"`
 	Strategy string           `yaml:"strategy"`
 }
