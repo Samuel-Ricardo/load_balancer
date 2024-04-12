@@ -1,0 +1,7 @@
+services:
+  - name: service01
+    strategy: RoundRobin
+    matcher: "/"
+    replicas:
+      - url: http://127.0.0.1:8081
+      - url: http://127.0.0.1:8082
