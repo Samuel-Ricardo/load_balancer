@@ -36,3 +36,13 @@ type Server struct {
 func (s *Server) Forward(res http.ResponseWriter, req *http.Request) {
 	s.Proxy.ServeHTTP(res, req)
 }
+
+func (s *Server) GetMetaOrDefault(key, def string) string {
+	v, ok := s.Metadata[key]
+
+	if !ok {
+		return def
+	}
+
+	return v
+}
