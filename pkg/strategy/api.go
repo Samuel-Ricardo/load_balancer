@@ -18,8 +18,15 @@ type BalancingStrategy interface {
 
 var strategies map[string]func() BalancingStrategy
 
-// INFO: Based simple incrementable counter, just go to next server
+// INFO: Based simple incrementable counter, just go to next server, current+1
 type RoundRobin struct {
 	mu      sync.Mutex
 	current int
+}
+
+// INFO: RoundRobin with weight
+type WeightedRoundRobin struct {
+	count   []int
+	current int
+	mu      sync.Mutex
 }
