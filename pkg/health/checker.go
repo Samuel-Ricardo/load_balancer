@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Samuel-Ricardo/load_balancer/pkg/domain"
-	"github.com/pingcap/log"
+	log "github.com/sirupsen/logrus"
 )
 
 type HealthChecker struct {
