@@ -41,27 +41,24 @@ func (hc *HealthChecker) start() {
 }
 
 func checkHealth(server *domain.Server) {
-  
-  _, err := net.DialTimeout("tcp", server.Url.Host, time.Second*5)
+	_, err := net.DialTimeout("tcp", server.Url.Host, time.Second*5)
+	if err != nil {
 
-  if err != nil {
+		log.Errorf("Could not connect to %s: %s, error: %s", server.Url.Host, server.Url.Path, err.Error())
+		old := server.SetLiveness(false)
 
-    log.Errorf(Could not connect to %s: %s, error: %s", server.Url.Host, server.Url.Path, err.Error())
-    old := server.SetLiveness(false)
-  
-    if old {
-      log.Warnf("Server %s is dead", server.Url.Host)
-      log.Warnf("Transitioning server '%s' from Live to Unavailable state", server.Url.Host)
-    }
+		if old {
+			log.Warnf("Server %s is dead", server.Url.Host)
+			log.Warnf("Transitioning server '%s' from Live to Unavailable state", server.Url.Host)
+		}
 
-    return
-  }
+		return
+	}
 
-  old := server.SetLiveness(true)
-  
-  if old {
-    log.Warnf("Server %s is alive", server.Url.Host)
-    log.Warnf("Transitioning server '%s' from Unavailable to Live state", server.Url.Host)
-  }
+	old := server.SetLiveness(true)
 
+	if old {
+		log.Warnf("Server %s is alive", server.Url.Host)
+		log.Warnf("Transitioning server '%s' from Unavailable to Live state", server.Url.Host)
+	}
 }
