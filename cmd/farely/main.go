@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strings"
@@ -81,4 +82,25 @@ func (f *Farely) findServiceList(reqPath string) (*config.ServerList, error) {
 	}
 
 	return nil, fmt.Errorf("could not find a matcher for url: '%s'", reqPath)
+}
+
+func (f *Farely) ServerHTTP(res http.ResponseWriter, req *http.Request) {
+	log.Infof("Received new request: url='%s'", req.Host)
+
+	sl, err := f.findServiceList(req.URL.Path)
+	if err != nil {
+		log.Error(err)
+		res.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	next, err := sl.Strategy.Next(sl.Servers)
+	if err != nil {
+		log.Error(err)
+		res.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	log.Infof("Fowarding to the server='%s'", next.Url.Host)
+	next.Forward(res, req)
 }
