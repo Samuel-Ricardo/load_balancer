@@ -8,15 +8,25 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/farely/main.go
+RUN go test ./pkg/config
+
+RUN go build -o main ./cmd/farely/main.go
+RUN go build -o demo ./cmd/demo/main.go
 
 
 FROM alpine:latest
 
 WORKDIR /root/
+
 COPY --from=builder /app/main .
+COPY --from=builder /app/demo .
+COPY --from=builder /app/example ./example
 
 RUN chmod +x ./main
 
+ARG CONFIG_PATH
+ENV CONFIG_PATH=$CONFIG_PATH 
+
 EXPOSE 8080
-CMD ["./main"]
+#CMD ["./main", "--config-path", $CONFIG_PATH]
+CMD ["tail", "-f", "/dev/null"]
