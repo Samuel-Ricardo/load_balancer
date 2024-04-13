@@ -29,4 +29,4 @@ ENV CONFIG_PATH=$CONFIG_PATH
 
 EXPOSE 8080
 #CMD ["./main", "--config-path", $CONFIG_PATH]
-CMD ["tail", "-f", "/dev/null"]
+#CMD ["tail", "-f", "/dev/null"]
