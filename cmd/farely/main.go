@@ -19,7 +19,7 @@ import (
 
 var (
 	port       = flag.Int("port", 8080, "Where to start farely")
-	configFile = flag.String("confi-path", "", "The config file to supply farely")
+	configFile = flag.String("config-path", "", "The config file to supply farely")
 )
 
 type Farely struct {
