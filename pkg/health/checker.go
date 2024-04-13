@@ -24,7 +24,7 @@ func NewChecker(_conf *domain.Config, servers []*domain.Server) (*HealthChecker,
 	}, nil
 }
 
-func (hc *HealthChecker) start() {
+func (hc *HealthChecker) Start() {
 	log.Info("Starting the health checker...")
 
 	ticker := time.NewTicker(time.Second * 10)
