@@ -120,3 +120,13 @@ func (w *WeightedRoundRobin) Next(servers []*domain.Server) (*domain.Server, err
 
 	return picked, nil
 }
+
+func LoadStrategy(name string) BalancingStrategy {
+	st, ok := strategies[name]
+	if !ok {
+		log.Warnf("Strategy with name '%s' not found, falling back to Round Robin Strategy", name)
+		return strategies[kRoundRobin]()
+	}
+	log.Infof("Picked Strategy '%s'", name)
+	return st()
+}
