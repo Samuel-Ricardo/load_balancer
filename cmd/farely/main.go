@@ -2,8 +2,10 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 
 	"github.com/Samuel-Ricardo/load_balancer/pkg/config"
 	"github.com/Samuel-Ricardo/load_balancer/pkg/domain"
@@ -66,4 +68,17 @@ func NewFarely(conf *config.Config) *Farely {
 		Config:     conf,
 		ServerList: serverMap,
 	}
+}
+
+func (f *Farely) findServiceList(reqPath string) (*config.ServerList, error) {
+	log.Infof("Trying to find matcher for request: %s", reqPath)
+
+	for matcher, s := range f.ServerList {
+		if strings.HasPrefix(reqPath, matcher) {
+			log.Infof("Found service '%s' matching the request", s.Name)
+			return s, nil
+		}
+	}
+
+	return nil, fmt.Errorf("could not find a matcher for url: '%s'", reqPath)
 }
