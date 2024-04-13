@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/Samuel-Ricardo/load_balancer/pkg/config"
@@ -17,8 +18,8 @@ import (
 )
 
 var (
-	port      = flag.Int("port", 8080, "Where to start farely")
-	configure = flag.String("confi-path", "", "The config file to supply farely")
+	port       = flag.Int("port", 8080, "Where to start farely")
+	configFile = flag.String("confi-path", "", "The config file to supply farely")
 )
 
 type Farely struct {
@@ -84,7 +85,7 @@ func (f *Farely) findServiceList(reqPath string) (*config.ServerList, error) {
 	return nil, fmt.Errorf("could not find a matcher for url: '%s'", reqPath)
 }
 
-func (f *Farely) ServerHTTP(res http.ResponseWriter, req *http.Request) {
+func (f *Farely) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	log.Infof("Received new request: url='%s'", req.Host)
 
 	sl, err := f.findServiceList(req.URL.Path)
@@ -103,4 +104,29 @@ func (f *Farely) ServerHTTP(res http.ResponseWriter, req *http.Request) {
 
 	log.Infof("Fowarding to the server='%s'", next.Url.Host)
 	next.Forward(res, req)
+}
+
+func main() {
+	flag.Parse()
+
+	file, err := os.Open(*configFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	conf, err := config.LoadConfig(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	farely := NewFarely(conf)
+
+	server := http.Server{
+		Addr:    fmt.Sprintf(":%d", *port),
+		Handler: farely,
+	}
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatal(err)
+	}
 }
